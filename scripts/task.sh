@@ -6,7 +6,7 @@
 [ -z "$BINDIR" ] && BINDIR=${CRASHDIR}
 CFG_PATH=${CRASHDIR}/configs/ShellCrash.cfg
 TMPDIR=/tmp/ShellCrash && [ ! -f ${TMPDIR} ] && mkdir -p ${TMPDIR}
-source $CFG_PATH >/dev/null 2>&1
+. $CFG_PATH >/dev/null 2>&1
 [ -n "$(tar --help 2>&1|grep -o 'no-same-owner')" ] && tar_para='--no-same-owner' #tar命令兼容
 
 setconfig(){
@@ -20,13 +20,13 @@ ckcmd(){ #检查命令是否存在
 
 #任务命令
 check_update(){ #检查更新工具
-	${CRASHDIR}/start.sh get_bin ${TMPDIR}/crashversion "bin/version" echooff
-	[ "$?" = "0" ] && source ${TMPDIR}/crashversion 2>/dev/null	
+	${CRASHDIR}/start.sh get_bin ${TMPDIR}/crashversion "$1" echooff
+	[ "$?" = "0" ] && . ${TMPDIR}/crashversion 2>/dev/null	
 	rm -rf ${TMPDIR}/crashversion
 }
 update_core(){ #自动更新内核
 	#检查版本
-	check_update
+	check_update bin/version
 	crash_v_new=$(eval echo \$${crashcore}_v)
 	if [ -z "$crash_v_new" -o "$crash_v_new" = "$core_v" ];then
 		logger "任务【自动更新内核】中止-未检测到版本更新"
@@ -88,7 +88,7 @@ update_core(){ #自动更新内核
 }
 update_scripts(){ #自动更新脚本
 	#检查版本
-	check_update
+	check_update version
 	if [ -z "$versionsh" -o "$versionsh" = "versionsh_l" ];then
 		logger "任务【自动更新脚本】中止-未检测到版本更新"
 		exit 1
@@ -109,7 +109,7 @@ update_scripts(){ #自动更新脚本
 				${CRASHDIR}/start.sh start
 				return 1
 			else
-				source ${CRASHDIR}/init.sh >/dev/null
+				. ${CRASHDIR}/init.sh >/dev/null
 				${CRASHDIR}/start.sh start
 				return 0
 			fi		
@@ -119,7 +119,7 @@ update_scripts(){ #自动更新脚本
 update_mmdb(){ #自动更新数据库
 	getgeo(){
 		#检查版本
-		check_update
+		check_update bin/version
 		geo_v="$(echo $2 | awk -F "." '{print $1}')_v" #获取版本号类型比如Country_v
 		geo_v_new=$GeoIP_v
 		geo_v_now=$(eval echo \$$geo_v)
